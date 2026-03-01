@@ -27,6 +27,7 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
+                <h1 className="text-3xl font-bold mb-6">Adivina la canción</h1>
                 {children}
             </body>
         </html>

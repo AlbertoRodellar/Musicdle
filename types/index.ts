@@ -11,3 +11,9 @@ export interface Song {
     artist: { name: string };
     album: { title: string; cover: string };
 }
+
+export interface RoundResult {
+    song: string;
+    attempts: number;
+    skipped: boolean;
+}

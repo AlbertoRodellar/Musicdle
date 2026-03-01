@@ -1,30 +1,25 @@
-import { Artist, Song } from "@/types";
+"use client";
+import { Artist, RoundResult, Song } from "@/types";
 import { useEffect, useState } from "react";
 
 interface GameProps {
     artist: Artist;
     rounds: number;
-}
-interface RoundResult {
-    song: string;
-    attempts: number;
-    skipped: boolean;
+    onFinish: (results: RoundResult[]) => void;
 }
 
-export default function Game({ artist, rounds }: GameProps) {
+export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [songs, setSongs] = useState<Song[]>([]);
     const [currentRound, setCurrentRound] = useState(0);
     const currentSong = songs[currentRound];
     const [results, setResults] = useState<RoundResult[]>([]);
     const [attempts, setAttempts] = useState(0);
-    const [gameOver, setGameOver] = useState(false);
     const [message, setMessage] = useState("");
 
     useEffect(() => {
         fetch(`/api/songs?artistId=${artist.id}`)
             .then((res) => res.json())
             .then((data) => {
-                console.log("data:", data.data);
                 const allSongs: Song[] = data.data;
                 const randomSongs = getRandomSongs(allSongs, rounds);
                 setSongs(randomSongs);
@@ -37,85 +32,64 @@ export default function Game({ artist, rounds }: GameProps) {
     }
 
     function normalize(str: string) {
-        return str.toLowerCase().trim().replace(/[''`]/g, "'"); // convierte todas las comillas a la misma
+        return str.toLowerCase().trim().replace(/[''`]/g, "'");
+    }
+
+    // pasa a la siguiente ronda o acaba el game
+    function nextRoundOrFinish(
+        newResult: RoundResult,
+        updatedResults: RoundResult[],
+    ) {
+        if (currentRound + 1 < songs.length) {
+            setResults(updatedResults);
+            setCurrentRound((r) => r + 1);
+            setAttempts(0);
+        } else {
+            onFinish(updatedResults);
+        }
     }
 
     function handleGuess(formData: FormData) {
         const guess = normalize(formData.get("guess")?.toString() || "");
         const answer = normalize(currentSong.title);
-        const correct = guess === answer;
 
-        // si el guess no es correcto attempts +1 y vuelve atras
-        if (!correct) {
-            console.log("guess:", guess);
-            console.log("answer:", answer);
+        // si el guess no es correcto return
+        if (guess !== answer) {
             setAttempts((a) => a + 1);
             setMessage(`❌ Incorrecto. Llevas ${attempts} intentos.`);
+            console.log('answer:', answer)
             return;
         }
-        // si el guess es correcto se crea un nuevo resultado de ronda
+
+        // si el guess es correcto se crea nuevo resultado y despues de 2s se pasa a la siguiente ronda
         const newResult: RoundResult = {
             song: currentSong.title,
-            attempts: attempts + 1, // +1 porque este intento correcto también cuenta
+            attempts: attempts + 1,
             skipped: false,
         };
 
         setMessage("✅ Acertaste!");
 
         setTimeout(() => {
-            setMessage(""); // resetea el mensaje
-            if (currentRound + 1 < songs.length) {
-                setResults((prev) => [...prev, newResult]);
-                setCurrentRound((r) => r + 1);
-                setAttempts(0); // resetea intentos para la siguiente ronda
-            } else {
-                setResults((prev) => [...prev, newResult]);
-                setGameOver(true);
-            }
+            setMessage("");
+            nextRoundOrFinish(newResult, [...results, newResult]);
         }, 2000);
     }
 
+    // si skipea se crea nuevo resultado y se pasa a la siguiente ronda
     function handleSkip() {
         const newResult: RoundResult = {
             song: currentSong.title,
             attempts,
             skipped: true,
         };
-
-        if (currentRound + 1 < songs.length) {
-            setResults((prev) => [...prev, newResult]);
-            setCurrentRound((r) => r + 1);
-            setAttempts(0);
-        } else {
-            setResults((prev) => [...prev, newResult]);
-            setGameOver(true);
-        }
+        nextRoundOrFinish(newResult, [...results, newResult]);
     }
 
     if (songs.length === 0) return <p className="p-8">Cargando canciones...</p>;
 
-    if (gameOver)
-        return (
-            <div className="min-h-screen  p-8">
-                <h2 className="text-3xl font-bold mb-6">¡Juego terminado!</h2>
-                {results.map((result, index) => (
-                    <div
-                        key={index}
-                        className="bg-gray-800 border border-gray-200 rounded-xl p-4 mb-3"
-                    >
-                        <p className="font-bold">{result.song}</p>
-                        <p className="text-gray-400">
-                            {result.skipped
-                                ? "⏭️ Saltada"
-                                : `✅ Adivinada en ${result.attempts} intentos`}
-                        </p>
-                    </div>
-                ))}
-            </div>
-        );
-
     return (
-        <div className="min-h-screen  p-8">
+        <div className="min-h-screen p-8">
             <p className="text-gray-500 mb-2">
                 Ronda {currentRound + 1} de {rounds}
             </p>
@@ -147,7 +121,7 @@ export default function Game({ artist, rounds }: GameProps) {
                     </button>
                 </div>
             </form>
-            <p>{message}</p>
+            <p className="mt-4">{message}</p>
         </div>
     );
 }
