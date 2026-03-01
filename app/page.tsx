@@ -41,8 +41,10 @@ export default function Page() {
 
     if (gameStarted && selectedArtist)
         return <Game artist={selectedArtist} rounds={rounds} />;
+
     return (
-        <div>
+        <div className="min-h-screen p-8">
+            <h1 className="text-3xl font-bold mb-6">Adivina la canción</h1>
             <ArtistSearch onArtistSelect={handleArtistSearch} />
             <ArtistsList
                 artists={visibleArtists}
@@ -57,18 +59,36 @@ export default function Page() {
                     onPrev={() => setPage((p) => p - 1)}
                 />
             )}
-            {selectedArtist && <p>Selected artist: {selectedArtist.name}</p>}
             {selectedArtist && (
-                <form action={startGame}>
-                    <label htmlFor="rounds">Selecciona cuantas rondas:</label>
+                <p className="mt-4 text-gray-600">
+                    Artista seleccionado:{" "}
+                    <span className="font-bold text-white">
+                        {selectedArtist.name}
+                    </span>
+                </p>
+            )}
+            {selectedArtist && (
+                <form
+                    action={startGame}
+                    className="flex items-center gap-4 mt-4"
+                >
+                    <label htmlFor="rounds" className="font-medium">
+                        Selecciona cuantas rondas:
+                    </label>
                     <input
                         type="number"
                         name="rounds"
                         min={1}
                         max={5}
                         defaultValue={3}
+                        className="border border-gray-300 rounded-lg px-4 py-2 w-20 outline-none focus:border-blue-500"
                     />
-                    <button type="submit">Empezar!</button>
+                    <button
+                        type="submit"
+                        className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors cursor-pointer font-medium"
+                    >
+                        Empezar!
+                    </button>
                 </form>
             )}
         </div>
