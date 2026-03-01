@@ -15,6 +15,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [results, setResults] = useState<RoundResult[]>([]);
     const [attempts, setAttempts] = useState(0);
     const [message, setMessage] = useState("");
+    const [guesses, setGuesses] = useState<string[]>([]);
 
     useEffect(() => {
         fetch(`/api/songs?artistId=${artist.id}`)
@@ -44,7 +45,10 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             setResults(updatedResults);
             setCurrentRound((r) => r + 1);
             setAttempts(0);
+            setGuesses([]);
         } else {
+            // onFinish es la funcion que le pasamos desde page.tsx que basicamente hace un emit de los resultados al padre
+            // y cambia el gameState para mostrar estos resultados
             onFinish(updatedResults);
         }
     }
@@ -52,12 +56,13 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     function handleGuess(formData: FormData) {
         const guess = normalize(formData.get("guess")?.toString() || "");
         const answer = normalize(currentSong.title);
+        setGuesses((prev) => [...prev, guess]);
 
         // si el guess no es correcto return
         if (guess !== answer) {
             setAttempts((a) => a + 1);
-            setMessage(`❌ Incorrecto. Llevas ${attempts} intentos.`);
-            console.log('answer:', answer)
+            setMessage(`❌ Incorrecto.`);
+            console.log("answer:", answer);
             return;
         }
 
@@ -122,6 +127,14 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
                 </div>
             </form>
             <p className="mt-4">{message}</p>
+            {guesses.length > 0 && (
+                <div>
+                    <p>Intentos:</p>
+                    {guesses.map((guess, index) => (
+                        <p key={index}>{guess}</p>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

@@ -3,11 +3,12 @@ import { Artist } from "@/types";
 interface ArtistCardProps {
     artist: Artist;
     onSelect: (artist: Artist) => void;
+    isSelected: boolean;
 }
-export default function ArtistCard({ artist, onSelect }: ArtistCardProps) {
+export default function ArtistCard({ artist, onSelect, isSelected }: ArtistCardProps) {
     return (
         <div
-            className="cursor-pointer border bg-gray-800 hover:bg-gray-900 rounded-xl p-4 w-64 h-68 flex flex-col "
+            className={`cursor-pointer border bg-gray-800 hover:bg-gray-900 rounded-xl p-4 w-64 h-68 flex flex-col ${isSelected ? "border-green-500" : "border-gray-200"}`}
             onClick={() => onSelect(artist)}
         >
             <img

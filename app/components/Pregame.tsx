@@ -45,6 +45,7 @@ export default function Pregame({ onStart }: PregameProps) {
             <ArtistsList
                 artists={visibleArtists}
                 onSelect={handleArtistSelect}
+                selectedArtistId={selectedArtist?.id ?? null}
             />
             {artists.length > 0 && (
                 <Pagination
