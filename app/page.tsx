@@ -65,7 +65,7 @@ export default function Page() {
                         type="number"
                         name="rounds"
                         min={1}
-                        max={10}
+                        max={5}
                         defaultValue={3}
                     />
                     <button type="submit">Empezar!</button>
