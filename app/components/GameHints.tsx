@@ -13,14 +13,12 @@ const HINT_2 = 5; // lista canciones del album
 export default function GameHints({ currentSong, guesses }: GameHintsProps) {
     const [albumTracks, setAlbumTracks] = useState<string[]>([]);
     const [releaseDate, setReleaseDate] = useState<string>("");
-    console.log("currentSong:", currentSong);
 
     // Al renderizar el componente hacemos fetch para obtener canciones del album
     useEffect(() => {
         fetch(`/api/album?albumId=${currentSong.album.id}`)
             .then((res) => res.json())
             .then((data) => {
-                console.log("data:", data);
                 const titles = data.tracks.data.map(
                     (track: { title: string }) => track.title,
                 );
