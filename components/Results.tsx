@@ -31,6 +31,9 @@ export default function Results({
             <h2 className="text-3xl font-bold mb-6">¡Juego terminado!</h2>
             <p className="text-xl font-bold mb-6">
                 Puntuación total: {calculateScore(results)}
+                <span className="text-gray-500 text-sm ml-1">
+                    / {results.length * 1000}
+                </span>
             </p>
             <p className="text-gray-500 mb-6">
                 Tiempo total: {totalTime} segundos
