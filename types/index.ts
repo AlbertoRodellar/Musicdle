@@ -17,4 +17,5 @@ export interface RoundResult {
     song: string;
     attempts: number;
     skipped: boolean;
+    time: number;
 }

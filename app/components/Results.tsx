@@ -6,9 +6,30 @@ interface ResultsProps {
 }
 
 export default function Results({ results, onRestart }: ResultsProps) {
+    // Calcula los puntos totales segun los results
+    // Empiezas con 1000 puntos por ronda, y se van restando puntos -100 cada intento y -50 cada 5 segundos
+    // El roundScore con el Math.max garantiza que no se resten puntos, el puntaje minimo por ronda es 0
+    function calculateScore(results: RoundResult[]): number {
+        return results.reduce((total, result) => {
+            if (result.skipped) return total;
+            const base = 1000;
+            const attemptPenalty = result.attempts * 100;
+            const timePenalty = Math.floor(result.time / 5) * 50;
+            const roundScore = Math.max(0, base - attemptPenalty - timePenalty);
+            return total + roundScore;
+        }, 0);
+    }
+    const totalTime = results.reduce((total, result) => total + result.time, 0);
+
     return (
         <div className="min-h-screen p-8">
             <h2 className="text-3xl font-bold mb-6">¡Juego terminado!</h2>
+            <p className="text-xl font-bold mb-6">
+                Puntuación total: {calculateScore(results)}
+            </p>
+            <p className="text-gray-500 mb-6">
+                Tiempo total: {totalTime} segundos
+            </p>
             {results.map((result, index) => (
                 <div
                     key={index}
@@ -19,6 +40,9 @@ export default function Results({ results, onRestart }: ResultsProps) {
                         {result.skipped
                             ? "⏭️ Saltada"
                             : `✅ Adivinada en ${result.attempts} intentos`}
+                    </p>
+                    <p className="text-gray-400">
+                        Tiempo: {result.time} segundos
                     </p>
                 </div>
             ))}

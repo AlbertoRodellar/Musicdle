@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import GameHints from "./GameHints";
 import LastGuesses from "./LastGuesses";
 import GuessInput from "./GuessInput";
+import Timer from "./Timer";
 
 interface GameProps {
     artist: Artist;
@@ -20,6 +21,8 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [attempts, setAttempts] = useState(0);
     const [message, setMessage] = useState("");
     const [guesses, setGuesses] = useState<string[]>([]);
+    const [startTime, setStartTime] = useState<number>(Date.now());
+    const [timerRunning, setTimerRunning] = useState(false);
 
     useEffect(() => {
         fetch(`/api/songs?artistId=${artist.id}`)
@@ -29,7 +32,11 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
                 setAllSongs(allSongs);
                 const randomSongs = getRandomSongs(allSongs).slice(0, rounds);
                 setSelectedSongs(randomSongs);
-                console.log('soluciones:', randomSongs.map(s => s.title));
+                setTimerRunning(true);
+                console.log(
+                    "soluciones:",
+                    randomSongs.map((s) => s.title),
+                );
             });
     }, []);
 
@@ -49,6 +56,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             setAttempts(0);
             setGuesses([]);
             setMessage("");
+            setStartTime(Date.now());
         } else {
             // onFinish es la funcion que le pasamos desde page.tsx que basicamente hace un emit de los resultados al padre
             // y cambia el gameState para mostrar estos resultados
@@ -69,11 +77,14 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             song: currentSong.title,
             attempts: attempts + 1,
             skipped: false,
+            time: Math.floor((Date.now() - startTime) / 1000), // se calcula en segundos el tiempo que ha tardado en acertar
         };
 
         setMessage("✅ Acertaste!");
-
+        setTimerRunning(false);
+        
         setTimeout(() => {
+            setTimerRunning(true);
             nextRoundOrFinish(newResult, [...results, newResult]);
         }, 2000);
     }
@@ -84,6 +95,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             song: currentSong.title,
             attempts,
             skipped: true,
+            time: Math.floor((Date.now() - startTime) / 1000),
         };
         nextRoundOrFinish(newResult, [...results, newResult]);
     }
@@ -105,6 +117,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             <p className="text-gray-500 mb-2">
                 Ronda {currentRound + 1} de {rounds}
             </p>
+            <Timer running={timerRunning} />
             <h2 className="text-2xl font-bold mb-4">{artist.name}</h2>
             <audio src={currentSong.preview} controls className="mb-6" />
             <GuessInput
