@@ -12,22 +12,22 @@ const HINT_2 = 5; // lista canciones del album
 
 export default function GameHints({ currentSong, guesses }: GameHintsProps) {
     const [albumTracks, setAlbumTracks] = useState<string[]>([]);
+    const [releaseDate, setReleaseDate] = useState<string>("");
     console.log("currentSong:", currentSong);
 
     // Al renderizar el componente hacemos fetch para obtener canciones del album
     useEffect(() => {
-        if (guesses >= HINT_2) {
-            fetch(`/api/album?albumId=${currentSong.album.id}`)
-                .then((res) => res.json())
-                .then((data) => {
-                    console.log("data:", data);
-                    const titles = data.data.map(
-                        (track: { title: string }) => track.title,
-                    );
-                    setAlbumTracks(titles);
-                });
-        }
-    }, [guesses]);
+        fetch(`/api/album?albumId=${currentSong.album.id}`)
+            .then((res) => res.json())
+            .then((data) => {
+                console.log("data:", data);
+                const titles = data.tracks.data.map(
+                    (track: { title: string }) => track.title,
+                );
+                setReleaseDate(data.release_date);
+                setAlbumTracks(titles);
+            });
+    }, [currentSong.album.id]);
 
     // Funcion para calcular cuantos intento faltan para la siguiente pista, o null si ya se han mostrado todas las pistas
     function getNextHintIn(guesses: number): number | null {
@@ -60,9 +60,14 @@ export default function GameHints({ currentSong, guesses }: GameHintsProps) {
                             alt={currentSong.album.title}
                             className="w-20 h-20 rounded-lg object-cover"
                         />
-                        <p className="font-semibold text-lg">
-                            {currentSong.album.title}
-                        </p>
+                        <div className="flex flex-col">
+                            <p className="font-semibold text-lg">
+                                {currentSong.album.title}
+                            </p>
+                            <p className="text-sm text-gray-500">
+                                {releaseDate}
+                            </p>
+                        </div>
                     </div>
 
                     {guesses >= HINT_2 && albumTracks.length > 0 && (

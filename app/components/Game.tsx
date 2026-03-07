@@ -2,6 +2,7 @@
 import { Artist, RoundResult, Song } from "@/types";
 import { useEffect, useState } from "react";
 import GameHints from "./GameHints";
+import LastGuesses from "./LastGuesses";
 
 interface GameProps {
     artist: Artist;
@@ -128,7 +129,13 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             </form>
             <p className="mt-4">{message}</p>
             {guesses.length > 0 && (
-                <GameHints currentSong={currentSong} guesses={guesses.length} />
+                <>
+                    <LastGuesses guesses={guesses} />
+                    <GameHints
+                        currentSong={currentSong}
+                        guesses={guesses.length}
+                    />
+                </>
             )}
         </div>
     );
