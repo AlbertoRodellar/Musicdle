@@ -14,7 +14,10 @@ export interface Song {
 }
 
 export interface RoundResult {
-    song: string;
+    song: {
+        title: string;
+        cover: string;
+    }
     attempts: number;
     skipped: boolean;
     time: number;

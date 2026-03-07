@@ -2,10 +2,15 @@ import { RoundResult } from "@/types";
 
 interface ResultsProps {
     results: RoundResult[];
+    onReplay: () => void;
     onRestart: () => void;
 }
 
-export default function Results({ results, onRestart }: ResultsProps) {
+export default function Results({
+    results,
+    onReplay,
+    onRestart,
+}: ResultsProps) {
     // Calcula los puntos totales segun los results
     // Empiezas con 1000 puntos por ronda, y se van restando puntos -100 cada intento y -50 cada 5 segundos
     // El roundScore con el Math.max garantiza que no se resten puntos, el puntaje minimo por ronda es 0
@@ -33,19 +38,28 @@ export default function Results({ results, onRestart }: ResultsProps) {
             {results.map((result, index) => (
                 <div
                     key={index}
-                    className="bg-gray-800 border border-gray-200 rounded-xl p-4 mb-3"
+                    className="bg-gray-800 border border-gray-200 rounded-xl p-4 mb-3 flex items-center gap-4"
                 >
-                    <p className="font-bold">{result.song}</p>
-                    <p className="text-gray-400">
-                        {result.skipped
-                            ? "⏭️ Saltada"
-                            : `✅ Adivinada en ${result.attempts} intentos`}
-                    </p>
-                    <p className="text-gray-400">
-                        Tiempo: {result.time} segundos
-                    </p>
+                    <img src={result.song.cover} alt={result.song.title} />
+                    <div className="flex flex-col">
+                        <p className="font-bold">{result.song.title}</p>
+                        <p className="text-gray-400">
+                            {result.skipped
+                                ? "⏭️ Saltada"
+                                : `✅ Adivinada en ${result.attempts} intentos`}
+                        </p>
+                        <p className="text-gray-400">
+                            Tiempo: {result.time} segundos
+                        </p>
+                    </div>
                 </div>
             ))}
+            <button
+                onClick={onReplay}
+                className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors cursor-pointer font-medium mr-4"
+            >
+                Volver a jugar
+            </button>
             <button
                 onClick={onRestart}
                 className="mt-6 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer font-medium"

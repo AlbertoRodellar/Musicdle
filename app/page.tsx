@@ -42,6 +42,7 @@ export default function Page() {
             return (
                 <Results
                     results={results}
+                    onReplay={() => setGameState("game")}
                     onRestart={() => setGameState("menu")}
                 />
             );

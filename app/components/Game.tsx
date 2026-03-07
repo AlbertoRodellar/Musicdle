@@ -12,6 +12,7 @@ interface GameProps {
     onFinish: (results: RoundResult[]) => void;
 }
 
+//TODO: probar addisson rae porque peta tanto
 export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [allSongs, setAllSongs] = useState<Song[]>([]);
     const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
@@ -28,7 +29,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         fetch(`/api/songs?artistId=${artist.id}`)
             .then((res) => res.json())
             .then((data) => {
-                const allSongs: Song[] = data.data;
+                const allSongs = removeDuplicates(data.data);
                 setAllSongs(allSongs);
                 const randomSongs = getRandomSongs(allSongs).slice(0, rounds);
                 setSelectedSongs(randomSongs);
@@ -36,9 +37,19 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
                 console.log(
                     "soluciones:",
                     randomSongs.map((s) => s.title),
-                );
+                ); // testing
             });
     }, []);
+
+    //fixes bug de canciones con el mismo titulo de la api
+    function removeDuplicates(songs: Song[]): Song[] {
+        const seen = new Set<string>();
+        return songs.filter((song) => {
+            if (seen.has(song.title)) return false;
+            seen.add(song.title);
+            return true;
+        });
+    }
 
     function getRandomSongs(allSongs: Song[]): Song[] {
         const shuffled = [...allSongs].sort(() => Math.random() - 0.5);
@@ -74,7 +85,10 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         }
 
         const newResult: RoundResult = {
-            song: currentSong.title,
+            song: {
+                title: currentSong.title,
+                cover: currentSong.album.cover,
+            },
             attempts: attempts + 1,
             skipped: false,
             time: Math.floor((Date.now() - startTime) / 1000), // se calcula en segundos el tiempo que ha tardado en acertar
@@ -82,7 +96,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
 
         setMessage("✅ Acertaste!");
         setTimerRunning(false);
-        
+
         setTimeout(() => {
             setTimerRunning(true);
             nextRoundOrFinish(newResult, [...results, newResult]);
@@ -92,7 +106,10 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     // si skipea se crea nuevo resultado y se pasa a la siguiente ronda
     function handleSkip() {
         const newResult: RoundResult = {
-            song: currentSong.title,
+            song: {
+                title: currentSong.title,
+                cover: currentSong.album.cover,
+            },
             attempts,
             skipped: true,
             time: Math.floor((Date.now() - startTime) / 1000),
