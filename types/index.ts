@@ -9,7 +9,7 @@ export interface Song {
     title: string;
     preview: string;
     artist: { name: string };
-    album: { title: string; cover: string };
+    album: { id:number, title: string; cover: string };
 }
 
 export interface RoundResult {

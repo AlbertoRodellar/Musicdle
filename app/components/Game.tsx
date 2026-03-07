@@ -1,6 +1,7 @@
 "use client";
 import { Artist, RoundResult, Song } from "@/types";
 import { useEffect, useState } from "react";
+import GameHints from "./GameHints";
 
 interface GameProps {
     artist: Artist;
@@ -46,6 +47,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             setCurrentRound((r) => r + 1);
             setAttempts(0);
             setGuesses([]);
+            setMessage("");
         } else {
             // onFinish es la funcion que le pasamos desde page.tsx que basicamente hace un emit de los resultados al padre
             // y cambia el gameState para mostrar estos resultados
@@ -62,7 +64,6 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         if (guess !== answer) {
             setAttempts((a) => a + 1);
             setMessage(`❌ Incorrecto.`);
-            console.log("answer:", answer);
             return;
         }
 
@@ -76,7 +77,6 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         setMessage("✅ Acertaste!");
 
         setTimeout(() => {
-            setMessage("");
             nextRoundOrFinish(newResult, [...results, newResult]);
         }, 2000);
     }
@@ -128,12 +128,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             </form>
             <p className="mt-4">{message}</p>
             {guesses.length > 0 && (
-                <div>
-                    <p>Intentos:</p>
-                    {guesses.map((guess, index) => (
-                        <p key={index}>{guess}</p>
-                    ))}
-                </div>
+                <GameHints currentSong={currentSong} guesses={guesses.length} />
             )}
         </div>
     );
