@@ -6,8 +6,15 @@ export interface Artist {
 }
 
 export interface Song {
+    id: number;
     title: string;
     preview: string;
     artist: { name: string };
-    album: { title: string; cover: string };
+    album: { id:number, title: string; cover: string };
+}
+
+export interface RoundResult {
+    song: string;
+    attempts: number;
+    skipped: boolean;
 }
