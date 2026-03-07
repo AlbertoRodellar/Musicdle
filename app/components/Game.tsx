@@ -11,9 +11,10 @@ interface GameProps {
 }
 
 export default function Game({ artist, rounds, onFinish }: GameProps) {
-    const [songs, setSongs] = useState<Song[]>([]);
+    const [allSongs, setAllSongs] = useState<Song[]>([]);
+    const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
     const [currentRound, setCurrentRound] = useState(0);
-    const currentSong = songs[currentRound];
+    const currentSong = selectedSongs[currentRound];
     const [results, setResults] = useState<RoundResult[]>([]);
     const [attempts, setAttempts] = useState(0);
     const [message, setMessage] = useState("");
@@ -24,14 +25,15 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             .then((res) => res.json())
             .then((data) => {
                 const allSongs: Song[] = data.data;
-                const randomSongs = getRandomSongs(allSongs, rounds);
-                setSongs(randomSongs);
+                setAllSongs(allSongs);
+                const randomSongs = getRandomSongs(allSongs).slice(0, rounds);
+                setSelectedSongs(randomSongs);
             });
     }, []);
 
-    function getRandomSongs(allSongs: Song[], count: number): Song[] {
+    function getRandomSongs(allSongs: Song[]): Song[] {
         const shuffled = [...allSongs].sort(() => Math.random() - 0.5);
-        return shuffled.slice(0, count);
+        return shuffled;
     }
 
     function normalize(str: string) {
@@ -43,7 +45,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         newResult: RoundResult,
         updatedResults: RoundResult[],
     ) {
-        if (currentRound + 1 < songs.length) {
+        if (currentRound + 1 < selectedSongs.length) {
             setResults(updatedResults);
             setCurrentRound((r) => r + 1);
             setAttempts(0);
@@ -92,7 +94,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         nextRoundOrFinish(newResult, [...results, newResult]);
     }
 
-    if (songs.length === 0) return <p className="p-8">Cargando canciones...</p>;
+    if (selectedSongs.length === 0) return <p className="p-8">Cargando canciones...</p>;
 
     return (
         <div className="min-h-screen p-8">
@@ -100,7 +102,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
                 Ronda {currentRound + 1} de {rounds}
             </p>
             <h2 className="text-2xl font-bold mb-4">
-                {currentSong.artist.name}
+                {artist.name}
             </h2>
             <audio src={currentSong.preview} controls className="mb-6" />
             <form action={handleGuess} className="flex flex-col gap-3 max-w-md">
@@ -109,8 +111,14 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
                     name="guess"
                     placeholder="Escribe el título de la canción..."
                     className="border border-gray-300 rounded-lg px-4 py-2 outline-none focus:border-blue-500"
+                    list="songs-list"
                     required
                 />
+                <datalist id="songs-list" className="bg-white">
+                    {allSongs.map((song) => (
+                        <option key={song.id} value={song.title} />
+                    ))}
+                </datalist>
                 <div className="flex gap-2">
                     <button
                         type="submit"
