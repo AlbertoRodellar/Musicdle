@@ -3,6 +3,8 @@ import { Artist, RoundResult, Song } from "@/types";
 import { useEffect, useState } from "react";
 import GameHints from "./GameHints";
 import LastGuesses from "./LastGuesses";
+import GuessInput from "./GuessInput";
+import Timer from "./Timer";
 
 interface GameProps {
     artist: Artist;
@@ -10,6 +12,7 @@ interface GameProps {
     onFinish: (results: RoundResult[]) => void;
 }
 
+//TODO: probar addisson rae porque peta tanto
 export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [allSongs, setAllSongs] = useState<Song[]>([]);
     const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
@@ -19,25 +22,38 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [attempts, setAttempts] = useState(0);
     const [message, setMessage] = useState("");
     const [guesses, setGuesses] = useState<string[]>([]);
+    const [startTime, setStartTime] = useState<number>(Date.now());
+    const [timerRunning, setTimerRunning] = useState(false);
 
     useEffect(() => {
         fetch(`/api/songs?artistId=${artist.id}`)
             .then((res) => res.json())
             .then((data) => {
-                const allSongs: Song[] = data.data;
+                const allSongs = removeDuplicates(data.data);
                 setAllSongs(allSongs);
                 const randomSongs = getRandomSongs(allSongs).slice(0, rounds);
                 setSelectedSongs(randomSongs);
+                setTimerRunning(true);
+                console.log(
+                    "soluciones:",
+                    randomSongs.map((s) => s.title),
+                ); // testing
             });
     }, []);
+
+    //fixes bug de canciones con el mismo titulo de la api
+    function removeDuplicates(songs: Song[]): Song[] {
+        const seen = new Set<string>();
+        return songs.filter((song) => {
+            if (seen.has(song.title)) return false;
+            seen.add(song.title);
+            return true;
+        });
+    }
 
     function getRandomSongs(allSongs: Song[]): Song[] {
         const shuffled = [...allSongs].sort(() => Math.random() - 0.5);
         return shuffled;
-    }
-
-    function normalize(str: string) {
-        return str.toLowerCase().trim().replace(/[''`]/g, "'");
     }
 
     // pasa a la siguiente ronda o acaba el game
@@ -51,6 +67,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             setAttempts(0);
             setGuesses([]);
             setMessage("");
+            setStartTime(Date.now());
         } else {
             // onFinish es la funcion que le pasamos desde page.tsx que basicamente hace un emit de los resultados al padre
             // y cambia el gameState para mostrar estos resultados
@@ -58,28 +75,30 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         }
     }
 
-    function handleGuess(formData: FormData) {
-        const guess = normalize(formData.get("guess")?.toString() || "");
-        const answer = normalize(currentSong.title);
+    function handleGuess(guess: string) {
         setGuesses((prev) => [...prev, guess]);
 
-        // si el guess no es correcto return
-        if (guess !== answer) {
+        if (guess !== currentSong.title) {
             setAttempts((a) => a + 1);
-            setMessage(`❌ Incorrecto.`);
+            setMessage("❌ Incorrecto.");
             return;
         }
 
-        // si el guess es correcto se crea nuevo resultado y despues de 2s se pasa a la siguiente ronda
         const newResult: RoundResult = {
-            song: currentSong.title,
+            song: {
+                title: currentSong.title,
+                cover: currentSong.album.cover,
+            },
             attempts: attempts + 1,
             skipped: false,
+            time: Math.floor((Date.now() - startTime) / 1000), // se calcula en segundos el tiempo que ha tardado en acertar
         };
 
         setMessage("✅ Acertaste!");
+        setTimerRunning(false);
 
         setTimeout(() => {
+            setTimerRunning(true);
             nextRoundOrFinish(newResult, [...results, newResult]);
         }, 2000);
     }
@@ -87,54 +106,42 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     // si skipea se crea nuevo resultado y se pasa a la siguiente ronda
     function handleSkip() {
         const newResult: RoundResult = {
-            song: currentSong.title,
+            song: {
+                title: currentSong.title,
+                cover: currentSong.album.cover,
+            },
             attempts,
             skipped: true,
+            time: Math.floor((Date.now() - startTime) / 1000),
         };
         nextRoundOrFinish(newResult, [...results, newResult]);
     }
 
-    if (selectedSongs.length === 0) return <p className="p-8">Cargando canciones...</p>;
+    // Filtra las canciones disponibles para adivinar, quitando las que ya se han adivinado o intentado
+    const playedSongs = selectedSongs.slice(0, currentRound);
+
+    const availableSongs = allSongs.filter(
+        (song) =>
+            !guesses.includes(song.title) &&
+            !playedSongs.some((s) => s.title === song.title),
+    );
+
+    if (selectedSongs.length === 0)
+        return <p className="p-8">Cargando canciones...</p>;
 
     return (
         <div className="min-h-screen p-8">
             <p className="text-gray-500 mb-2">
                 Ronda {currentRound + 1} de {rounds}
             </p>
-            <h2 className="text-2xl font-bold mb-4">
-                {artist.name}
-            </h2>
+            <Timer running={timerRunning} />
+            <h2 className="text-2xl font-bold mb-4">{artist.name}</h2>
             <audio src={currentSong.preview} controls className="mb-6" />
-            <form action={handleGuess} className="flex flex-col gap-3 max-w-md">
-                <input
-                    type="text"
-                    name="guess"
-                    placeholder="Escribe el título de la canción..."
-                    className="border border-gray-300 rounded-lg px-4 py-2 outline-none focus:border-blue-500"
-                    list="songs-list"
-                    required
-                />
-                <datalist id="songs-list" className="bg-white">
-                    {allSongs.map((song) => (
-                        <option key={song.id} value={song.title} />
-                    ))}
-                </datalist>
-                <div className="flex gap-2">
-                    <button
-                        type="submit"
-                        className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors cursor-pointer font-medium"
-                    >
-                        Comprobar
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleSkip}
-                        className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer font-medium"
-                    >
-                        Saltar
-                    </button>
-                </div>
-            </form>
+            <GuessInput
+                songs={availableSongs}
+                onGuess={(guess) => handleGuess(guess)}
+                onSkip={handleSkip}
+            />
             <p className="mt-4">{message}</p>
             {guesses.length > 0 && (
                 <>

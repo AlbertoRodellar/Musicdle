@@ -1,10 +1,10 @@
 "use client";
 import { useState } from "react";
 import { Artist, RoundResult } from "@/types";
-import Menu from "./components/Menu";
-import Pregame from "./components/Pregame";
-import Game from "./components/Game";
-import Results from "./components/Results";
+import Pregame from "@/components/pregame/Pregame";
+import Game from "@/components/game/Game";
+import Menu from "@/components/Menu";
+import Results from "@/components/Results";
 
 type GameState = "menu" | "pregame" | "game" | "results";
 
@@ -42,6 +42,7 @@ export default function Page() {
             return (
                 <Results
                     results={results}
+                    onReplay={() => setGameState("game")}
                     onRestart={() => setGameState("menu")}
                 />
             );
