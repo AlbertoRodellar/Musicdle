@@ -10,7 +10,7 @@ interface PregameProps {
     onStart: (artist: Artist, rounds: number) => void;
 }
 
-const CARDS_PER_PAGE = 6;
+const CARDS_PER_PAGE = 4;
 
 export default function Pregame({ onStart }: PregameProps) {
     const [artists, setArtists] = useState<Artist[]>([]);
@@ -79,7 +79,7 @@ export default function Pregame({ onStart }: PregameProps) {
             <ArtistSearch onArtistSelect={handleArtistSearch} />
             {isLoading ? (
                 <div className="flex flex-wrap gap-4 mt-4">
-                    {Array.from({ length: 6 }).map((_, i) => (
+                    {Array.from({ length: CARDS_PER_PAGE }).map((_, i) => (
                         <div
                             key={i}
                             className="w-64 h-68 flex flex-col gap-2 p-4 rounded-xl bg-gray-600"
@@ -91,53 +91,49 @@ export default function Pregame({ onStart }: PregameProps) {
                     ))}
                 </div>
             ) : (
-                <ArtistsList
-                    artists={visibleArtists}
-                    onSelect={handleArtistSelect}
-                    selectedArtistId={selectedArtist?.id ?? null}
-                />
-            )}
-            {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
-            {artists.length > 0 && (
-                <Pagination
-                    page={page}
-                    totalItems={artists.length}
-                    itemsPerPage={CARDS_PER_PAGE}
-                    onNext={() => setPage((p) => p + 1)}
-                    onPrev={() => setPage((p) => p - 1)}
-                />
-            )}
-            {selectedArtist && (
-                <p className="mt-4 text-gray-600">
-                    Artista seleccionado:{" "}
-                    <span className="font-bold text-white">
-                        {selectedArtist.name}
-                    </span>
-                </p>
-            )}
-            {selectedArtist && (
-                <form
-                    action={startGame}
-                    className="flex items-center gap-4 mt-4"
-                >
-                    <label htmlFor="rounds" className="font-medium">
-                        Selecciona cuantas rondas:
-                    </label>
-                    <input
-                        type="number"
-                        name="rounds"
-                        min={1}
-                        max={5}
-                        defaultValue={3}
-                        className="border border-gray-300 rounded-lg px-4 py-2 w-20 outline-none focus:border-blue-500"
+                <>
+                    <ArtistsList
+                        artists={visibleArtists}
+                        onSelect={handleArtistSelect}
+                        selectedArtistId={selectedArtist?.id ?? null}
                     />
-                    <button
-                        type="submit"
-                        className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors cursor-pointer font-medium"
-                    >
-                        Empezar!
-                    </button>
-                </form>
+                    {error && (
+                        <p className="mt-2 text-red-400 text-sm">{error}</p>
+                    )}
+                    {artists.length > 0 && (
+                        <Pagination
+                            page={page}
+                            totalItems={artists.length}
+                            itemsPerPage={CARDS_PER_PAGE}
+                            onNext={() => setPage((p) => p + 1)}
+                            onPrev={() => setPage((p) => p - 1)}
+                        />
+                    )}
+                    {selectedArtist && (
+                        <form
+                            action={startGame}
+                            className="flex items-center gap-4 mt-4"
+                        >
+                            <label htmlFor="rounds" className="font-medium">
+                                Selecciona cuantas rondas:
+                            </label>
+                            <input
+                                type="number"
+                                name="rounds"
+                                min={1}
+                                max={5}
+                                defaultValue={3}
+                                className="border border-gray-300 rounded-lg px-4 py-2 w-20 outline-none focus:border-blue-500"
+                            />
+                            <button
+                                type="submit"
+                                className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors cursor-pointer font-medium"
+                            >
+                                Empezar!
+                            </button>
+                        </form>
+                    )}
+                </>
             )}
         </div>
     );
