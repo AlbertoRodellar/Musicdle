@@ -7,6 +7,7 @@ import GuessInput from "./GuessInput";
 import Timer from "./Timer";
 import PreviewPlayer from "./PreviewPlayer";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface GameProps {
     artist: Artist;
@@ -25,6 +26,8 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [guesses, setGuesses] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<number>(Date.now());
     const [timerRunning, setTimerRunning] = useState(false);
+    const [loadingRound, setLoadingRound] = useState(true);
+    const MS_TO_SHOW_FEEDBACK = 1500;
 
     useEffect(() => {
         fetch(`/api/songs?artistId=${artist.id}`)
@@ -35,6 +38,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
                 const randomSongs = getRandomSongs(allSongs).slice(0, rounds);
                 setSelectedSongs(randomSongs);
                 setTimerRunning(true);
+                setLoadingRound(false);
                 console.log(
                     "soluciones:",
                     randomSongs.map((s) => s.title),
@@ -77,6 +81,8 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     }
 
     function handleGuess(guess: string) {
+        if (loadingRound) return;
+
         setGuesses((prev) => [...prev, guess]);
 
         if (guess !== currentSong.title) {
@@ -97,20 +103,24 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
 
         setFeedback("✅ Acertaste!");
         setTimerRunning(false);
+        setLoadingRound(true);
 
         toast.success("¡Has acertado!", {
             position: "top-center",
-            duration: 2000,
+            duration: MS_TO_SHOW_FEEDBACK,
         });
 
         setTimeout(() => {
             setTimerRunning(true);
             nextRoundOrFinish(newResult, [...results, newResult]);
-        }, 2000);
+            setLoadingRound(false);
+        }, MS_TO_SHOW_FEEDBACK);
     }
 
     // si skipea se crea nuevo resultado y se pasa a la siguiente ronda
     function handleSkip() {
+        setLoadingRound(true);
+        setTimerRunning(false);
         const newResult: RoundResult = {
             song: {
                 title: currentSong.title,
@@ -124,12 +134,14 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
         toast("Canción saltada", {
             description: currentSong.title,
             position: "top-center",
-            duration: 2000,
+            duration: MS_TO_SHOW_FEEDBACK,
         });
 
         setTimeout(() => {
+            setTimerRunning(true);
             nextRoundOrFinish(newResult, [...results, newResult]);
-        }, 2000);
+            setLoadingRound(false);
+        }, MS_TO_SHOW_FEEDBACK);
     }
 
     // Filtra las canciones disponibles para adivinar, quitando las que ya se han adivinado o intentado
@@ -141,9 +153,6 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             !playedSongs.some((s) => s.title === song.title),
     );
 
-    if (selectedSongs.length === 0)
-        return <p className="p-8">Cargando canciones...</p>;
-
     return (
         <div className="min-h-screen p-8">
             <p className="text-gray-500 mb-2">
@@ -151,20 +160,35 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             </p>
             <Timer running={timerRunning} />
             <h2 className="text-2xl font-bold mb-4">{artist.name}</h2>
-            <PreviewPlayer src={currentSong.preview} className="mb-6" />
-            <GuessInput
-                songs={availableSongs}
-                onGuess={(guess) => handleGuess(guess)}
-                onSkip={handleSkip}
-            />
-            <p className="mt-4">{feedback}</p>
-            {guesses.length > 0 && (
+            {loadingRound || selectedSongs.length === 0 || !currentSong ? (
+                <div className="min-h-screen">
+                    <Skeleton className="mb-6 h-20 w-full max-w-xl rounded-xl" />
+                    <div className="flex flex-col gap-3 max-w-md">
+                        <Skeleton className="h-10 w-full rounded-lg" />
+                        <div className="flex gap-2">
+                            <Skeleton className="h-9 w-28 rounded-lg" />
+                            <Skeleton className="h-9 w-24 rounded-lg" />
+                        </div>
+                    </div>
+                </div>
+            ) : (
                 <>
-                    <LastGuesses guesses={guesses} />
-                    <GameHints
-                        currentSong={currentSong}
-                        guesses={guesses.length}
+                    <PreviewPlayer src={currentSong.preview} className="mb-6" />
+                    <GuessInput
+                        songs={availableSongs}
+                        onGuess={(guess) => handleGuess(guess)}
+                        onSkip={handleSkip}
                     />
+                    <p className="mt-4">{feedback}</p>
+                    {guesses.length > 0 && (
+                        <>
+                            <LastGuesses guesses={guesses} />
+                            <GameHints
+                                currentSong={currentSong}
+                                guesses={guesses.length}
+                            />
+                        </>
+                    )}
                 </>
             )}
         </div>

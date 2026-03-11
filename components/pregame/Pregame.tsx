@@ -4,6 +4,7 @@ import { Artist } from "@/types";
 import ArtistSearch from "./ArtistSearch";
 import ArtistsList from "./ArtistsList";
 import Pagination from "./Pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PregameProps {
     onStart: (artist: Artist, rounds: number) => void;
@@ -76,17 +77,27 @@ export default function Pregame({ onStart }: PregameProps) {
     return (
         <div className="min-h-screen p-8">
             <ArtistSearch onArtistSelect={handleArtistSearch} />
-            {isLoading && (
-                <p className="mt-4 text-gray-400 text-sm">
-                    Buscando artistas...
-                </p>
+            {isLoading ? (
+                <div className="flex flex-wrap gap-4 mt-4">
+                    {Array.from({ length: 6 }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="w-64 h-68 flex flex-col gap-2 p-4 rounded-xl bg-gray-600"
+                        >
+                            <Skeleton className="w-full h-40 rounded-lg" />
+                            <Skeleton className="h-5 w-3/4 rounded-md mt-2" />
+                            <Skeleton className="h-4 w-1/2 rounded-md" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <ArtistsList
+                    artists={visibleArtists}
+                    onSelect={handleArtistSelect}
+                    selectedArtistId={selectedArtist?.id ?? null}
+                />
             )}
             {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
-            <ArtistsList
-                artists={visibleArtists}
-                onSelect={handleArtistSelect}
-                selectedArtistId={selectedArtist?.id ?? null}
-            />
             {artists.length > 0 && (
                 <Pagination
                     page={page}
