@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { formatTime } from "@/lib/time";
 
 interface TimerProps {
     running: boolean;
@@ -21,12 +22,9 @@ export default function Timer({ running }: TimerProps) {
         return () => clearInterval(interval);
     }, [running]);
 
-    const minutes = Math.floor(time / 60);
-    const seconds = String(time % 60).padStart(2, "0");
-
     return (
         <p className="text-gray-500 font-mono text-lg">
-            {minutes}:{seconds}
+            {formatTime(time)}
         </p>
     );
 }

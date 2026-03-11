@@ -1,4 +1,5 @@
 import { RoundResult } from "@/types";
+import { formatTime } from "@/lib/time";
 
 interface ResultsProps {
     results: RoundResult[];
@@ -35,8 +36,8 @@ export default function Results({
                     / {results.length * 1000}
                 </span>
             </p>
-            <p className="text-gray-500 mb-6">
-                Tiempo total: {totalTime} segundos
+            <p className="mb-6 text-gray-500">
+                Tiempo total: {formatTime(totalTime)}
             </p>
             {results.map((result, index) => (
                 <div
@@ -52,7 +53,7 @@ export default function Results({
                                 : `✅ Adivinada en ${result.attempts} intentos`}
                         </p>
                         <p className="text-gray-400">
-                            Tiempo: {result.time} segundos
+                            Tiempo: {formatTime(result.time)}
                         </p>
                     </div>
                 </div>
