@@ -4,6 +4,8 @@ import { Artist } from "@/types";
 import ArtistSearch from "./ArtistSearch";
 import ArtistsList from "./ArtistsList";
 import Pagination from "./Pagination";
+import { Skeleton } from "@/components/ui/skeleton";
+import RoundSelector from "./RoundSelector";
 
 interface PregameProps {
     onStart: (artist: Artist, rounds: number) => void;
@@ -27,12 +29,19 @@ export default function Pregame({ onStart }: PregameProps) {
         try {
             setError(null);
             setIsLoading(true);
-            const response = await fetch(`/api/search?q=${encodeURIComponent(artistName)}`);
+            const response = await fetch(
+                `/api/search?q=${encodeURIComponent(artistName)}`,
+            );
             if (!response.ok) {
-                throw new Error("No se ha podido buscar el artista. Inténtalo de nuevo.");
+                throw new Error(
+                    "No se ha podido buscar el artista. Inténtalo de nuevo.",
+                );
             }
             const data = await response.json();
-            setArtists(data.data ?? []);
+            const sortedArtists = data.data.sort(
+                (a: Artist, b: Artist) => b.nb_fan - a.nb_fan,
+            );
+            setArtists(sortedArtists);
             setSelectedArtist(null);
             setPage(0);
             if (!data.data || data.data.length === 0) {
@@ -55,14 +64,9 @@ export default function Pregame({ onStart }: PregameProps) {
         setSelectedArtist(artist);
     }
 
-    function startGame(formData: FormData) {
-        const rounds = Number(formData.get("rounds"));
+    function startGame(rounds: number) {
         if (!selectedArtist) {
-            setError("Selecciona un artista antes de empezar la partida.");
-            return;
-        }
-        if (!rounds || rounds < 1 || rounds > 5) {
-            setError("Elige un número de rondas entre 1 y 5.");
+            setError("Selecciona un artista antes de empezar.");
             return;
         }
         setError(null);
@@ -70,63 +74,45 @@ export default function Pregame({ onStart }: PregameProps) {
     }
 
     return (
-        <div className="min-h-screen p-8">
+        <div>
             <ArtistSearch onArtistSelect={handleArtistSearch} />
-            {isLoading && (
-                <p className="mt-4 text-gray-400 text-sm">
-                    Buscando artistas...
-                </p>
-            )}
-            {error && (
-                <p className="mt-2 text-red-400 text-sm">
-                    {error}
-                </p>
-            )}
-            <ArtistsList
-                artists={visibleArtists}
-                onSelect={handleArtistSelect}
-                selectedArtistId={selectedArtist?.id ?? null}
-            />
-            {artists.length > 0 && (
-                <Pagination
-                    page={page}
-                    totalItems={artists.length}
-                    itemsPerPage={CARDS_PER_PAGE}
-                    onNext={() => setPage((p) => p + 1)}
-                    onPrev={() => setPage((p) => p - 1)}
-                />
-            )}
-            {selectedArtist && (
-                <p className="mt-4 text-gray-600">
-                    Artista seleccionado:{" "}
-                    <span className="font-bold text-white">
-                        {selectedArtist.name}
-                    </span>
-                </p>
-            )}
-            {selectedArtist && (
-                <form
-                    action={startGame}
-                    className="flex items-center gap-4 mt-4"
-                >
-                    <label htmlFor="rounds" className="font-medium">
-                        Selecciona cuantas rondas:
-                    </label>
-                    <input
-                        type="number"
-                        name="rounds"
-                        min={1}
-                        max={5}
-                        defaultValue={3}
-                        className="border border-gray-300 rounded-lg px-4 py-2 w-20 outline-none focus:border-blue-500"
+            {isLoading ? (
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 mt-8">
+                    {Array.from({ length: CARDS_PER_PAGE }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="h-72 rounded-2xl py-4 px-4 flex flex-col items-center bg-[#1a1f2e]"
+                        >
+                            <Skeleton className="w-38 h-38 rounded-full mb-4" />
+                            <Skeleton className="h-4 w-3/4 rounded-md pt-6 m-auto" />
+                            <Skeleton className="h-3 w-1/2 rounded-md mt-auto mb-4" />
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <>
+                    <ArtistsList
+                        artists={visibleArtists}
+                        onSelect={handleArtistSelect}
+                        selectedArtistId={selectedArtist?.id ?? null}
                     />
-                    <button
-                        type="submit"
-                        className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors cursor-pointer font-medium"
-                    >
-                        Empezar!
-                    </button>
-                </form>
+                    {error && (
+                        <p className="mt-2 text-red-400 text-sm">{error}</p>
+                    )}
+                    {artists.length > 0 && (
+                        <Pagination
+                            page={page}
+                            totalItems={artists.length}
+                            itemsPerPage={CARDS_PER_PAGE}
+                            onNext={() => setPage((p) => p + 1)}
+                            onPrev={() => setPage((p) => p - 1)}
+                        />
+                    )}
+                    {selectedArtist && (
+                        <p>Tu artista seleccionado: {selectedArtist.name}</p>
+                    )}
+                    {selectedArtist && <RoundSelector onStart={startGame} />}
+                </>
             )}
         </div>
     );

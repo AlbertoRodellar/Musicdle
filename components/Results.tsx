@@ -1,4 +1,6 @@
 import { RoundResult } from "@/types";
+import { formatTime } from "@/lib/time";
+import ResultCard from "./ResultCard";
 
 interface ResultsProps {
     results: RoundResult[];
@@ -27,7 +29,7 @@ export default function Results({
     const totalTime = results.reduce((total, result) => total + result.time, 0);
 
     return (
-        <div className="min-h-screen p-8">
+        <div className="p-8">
             <h2 className="text-3xl font-bold mb-6">¡Juego terminado!</h2>
             <p className="text-xl font-bold mb-6">
                 Puntuación total: {calculateScore(results)}
@@ -35,27 +37,11 @@ export default function Results({
                     / {results.length * 1000}
                 </span>
             </p>
-            <p className="text-gray-500 mb-6">
-                Tiempo total: {totalTime} segundos
+            <p className="mb-6 text-gray-500">
+                Tiempo total: {formatTime(totalTime)}
             </p>
             {results.map((result, index) => (
-                <div
-                    key={index}
-                    className="bg-gray-800 border border-gray-200 rounded-xl p-4 mb-3 flex items-center gap-4"
-                >
-                    <img src={result.song.cover} alt={result.song.title} />
-                    <div className="flex flex-col">
-                        <p className="font-bold">{result.song.title}</p>
-                        <p className="text-gray-400">
-                            {result.skipped
-                                ? "⏭️ Saltada"
-                                : `✅ Adivinada en ${result.attempts} intentos`}
-                        </p>
-                        <p className="text-gray-400">
-                            Tiempo: {result.time} segundos
-                        </p>
-                    </div>
-                </div>
+                <ResultCard key={index} result={result} index={index} />
             ))}
             <button
                 onClick={onReplay}

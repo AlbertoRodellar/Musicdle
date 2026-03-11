@@ -10,14 +10,14 @@ export interface Song {
     title: string;
     preview: string;
     artist: { name: string };
-    album: { id:number, title: string; cover: string };
+    album: { id: number; title: string; cover: string };
 }
 
 export interface RoundResult {
     song: {
         title: string;
         cover: string;
-    }
+    };
     attempts: number;
     skipped: boolean;
     time: number;

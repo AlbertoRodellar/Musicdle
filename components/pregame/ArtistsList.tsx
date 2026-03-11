@@ -7,9 +7,13 @@ interface ArtistListProps {
     selectedArtistId: number | null;
 }
 
-export default function ArtistList({ artists, onSelect, selectedArtistId }: ArtistListProps) {
+export default function ArtistList({
+    artists,
+    onSelect,
+    selectedArtistId,
+}: ArtistListProps) {
     return (
-        <div className="flex flex-wrap gap-4 mt-4">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 mt-8">
             {artists.map((artist) => (
                 <ArtistCard
                     key={artist.id}
