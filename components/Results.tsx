@@ -1,5 +1,6 @@
 import { RoundResult } from "@/types";
 import { formatTime } from "@/lib/time";
+import ResultCard from "./ResultCard";
 
 interface ResultsProps {
     results: RoundResult[];
@@ -40,23 +41,7 @@ export default function Results({
                 Tiempo total: {formatTime(totalTime)}
             </p>
             {results.map((result, index) => (
-                <div
-                    key={index}
-                    className="bg-gray-800 border border-gray-200 rounded-xl p-4 mb-3 flex items-center gap-4"
-                >
-                    <img src={result.song.cover} alt={result.song.title} />
-                    <div className="flex flex-col">
-                        <p className="font-bold">{result.song.title}</p>
-                        <p className="text-gray-400">
-                            {result.skipped
-                                ? "⏭️ Saltada"
-                                : `✅ Adivinada en ${result.attempts} intentos`}
-                        </p>
-                        <p className="text-gray-400">
-                            Tiempo: {formatTime(result.time)}
-                        </p>
-                    </div>
-                </div>
+                <ResultCard key={index} result={result} index={index} />
             ))}
             <button
                 onClick={onReplay}
