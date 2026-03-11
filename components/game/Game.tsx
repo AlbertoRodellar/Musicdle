@@ -5,6 +5,7 @@ import GameHints from "./GameHints";
 import LastGuesses from "./LastGuesses";
 import GuessInput from "./GuessInput";
 import Timer from "./Timer";
+import PreviewPlayer from "./PreviewPlayer";
 
 interface GameProps {
     artist: Artist;
@@ -12,7 +13,6 @@ interface GameProps {
     onFinish: (results: RoundResult[]) => void;
 }
 
-//TODO: probar addisson rae porque peta tanto
 export default function Game({ artist, rounds, onFinish }: GameProps) {
     const [allSongs, setAllSongs] = useState<Song[]>([]);
     const [selectedSongs, setSelectedSongs] = useState<Song[]>([]);
@@ -136,7 +136,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             </p>
             <Timer running={timerRunning} />
             <h2 className="text-2xl font-bold mb-4">{artist.name}</h2>
-            <audio src={currentSong.preview} controls className="mb-6" />
+            <PreviewPlayer src={currentSong.preview} className="mb-6" />
             <GuessInput
                 songs={availableSongs}
                 onGuess={(guess) => handleGuess(guess)}
