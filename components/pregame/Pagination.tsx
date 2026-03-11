@@ -1,3 +1,11 @@
+import {
+    Pagination as ShadcnPagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationNext,
+    PaginationPrevious,
+} from "@/components/ui/pagination";
+
 interface PaginationProps {
     page: number;
     totalItems: number;
@@ -13,25 +21,32 @@ export default function Pagination({
     onNext,
     onPrev,
 }: PaginationProps) {
+    const isFirst = page === 0;
+    const isLast = (page + 1) * itemsPerPage >= totalItems;
+
     return (
-        <div className="flex gap-2 mt-4 items-center">
-            <button
-                onClick={onPrev}
-                disabled={page === 0}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 text-black cursor-pointer hover:bg-gray-300"
-            >
-                &lt;
-            </button>
-            <span>
-                {page + 1} / {Math.ceil(totalItems / itemsPerPage)}
-            </span>
-            <button
-                onClick={onNext}
-                disabled={(page + 1) * itemsPerPage >= totalItems}
-                className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 text-black cursor-pointer hover:bg-gray-300"
-            >
-                &gt;
-            </button>
-        </div>
+        <ShadcnPagination className="mt-4">
+            <PaginationContent>
+                <PaginationItem>
+                    <PaginationPrevious
+                        onClick={isFirst ? undefined : onPrev}
+                        className={isFirst ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        text="Anterior"
+                    />
+                </PaginationItem>
+                <PaginationItem>
+                    <span className="px-4 py-2 text-sm">
+                        {page + 1} / {Math.ceil(totalItems / itemsPerPage)}
+                    </span>
+                </PaginationItem>
+                <PaginationItem>
+                    <PaginationNext
+                        onClick={isLast ? undefined : onNext}
+                        className={isLast ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        text="Siguiente"
+                    />
+                </PaginationItem>
+            </PaginationContent>
+        </ShadcnPagination>
     );
 }
