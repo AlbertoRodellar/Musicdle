@@ -27,9 +27,13 @@ export default function Pregame({ onStart }: PregameProps) {
         try {
             setError(null);
             setIsLoading(true);
-            const response = await fetch(`/api/search?q=${encodeURIComponent(artistName)}`);
+            const response = await fetch(
+                `/api/search?q=${encodeURIComponent(artistName)}`,
+            );
             if (!response.ok) {
-                throw new Error("No se ha podido buscar el artista. Inténtalo de nuevo.");
+                throw new Error(
+                    "No se ha podido buscar el artista. Inténtalo de nuevo.",
+                );
             }
             const data = await response.json();
             setArtists(data.data ?? []);
@@ -77,11 +81,7 @@ export default function Pregame({ onStart }: PregameProps) {
                     Buscando artistas...
                 </p>
             )}
-            {error && (
-                <p className="mt-2 text-red-400 text-sm">
-                    {error}
-                </p>
-            )}
+            {error && <p className="mt-2 text-red-400 text-sm">{error}</p>}
             <ArtistsList
                 artists={visibleArtists}
                 onSelect={handleArtistSelect}

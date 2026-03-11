@@ -7,7 +7,11 @@ interface ArtistListProps {
     selectedArtistId: number | null;
 }
 
-export default function ArtistList({ artists, onSelect, selectedArtistId }: ArtistListProps) {
+export default function ArtistList({
+    artists,
+    onSelect,
+    selectedArtistId,
+}: ArtistListProps) {
     return (
         <div className="flex flex-wrap gap-4 mt-4">
             {artists.map((artist) => (
