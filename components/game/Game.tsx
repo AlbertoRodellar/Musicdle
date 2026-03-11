@@ -154,14 +154,14 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     );
 
     return (
-        <div className="min-h-screen p-8">
+        <div className="p-8">
             <p className="text-gray-500 mb-2">
                 Ronda {currentRound + 1} de {rounds}
             </p>
             <Timer running={timerRunning} />
             <h2 className="text-2xl font-bold mb-4">{artist.name}</h2>
             {loadingRound || selectedSongs.length === 0 || !currentSong ? (
-                <div className="min-h-screen">
+                <div>
                     <Skeleton className="mb-6 h-20 w-full max-w-xl rounded-xl" />
                     <div className="flex flex-col gap-3 max-w-md">
                         <Skeleton className="h-10 w-full rounded-lg" />

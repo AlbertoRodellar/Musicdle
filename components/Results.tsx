@@ -28,7 +28,7 @@ export default function Results({
     const totalTime = results.reduce((total, result) => total + result.time, 0);
 
     return (
-        <div className="min-h-screen p-8">
+        <div className="p-8">
             <h2 className="text-3xl font-bold mb-6">¡Juego terminado!</h2>
             <p className="text-xl font-bold mb-6">
                 Puntuación total: {calculateScore(results)}

@@ -4,7 +4,7 @@ interface MenuProps {
 
 export default function Menu({ onArtistMode }: MenuProps) {
     return (
-        <div className="min-h-screen p-8">
+        <div className="p-8">
             <div className="flex gap-4 flex-col w-64">
                 <button
                     onClick={onArtistMode}

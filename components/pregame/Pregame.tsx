@@ -5,6 +5,7 @@ import ArtistSearch from "./ArtistSearch";
 import ArtistsList from "./ArtistsList";
 import Pagination from "./Pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import RoundSelector from "./RoundSelector";
 
 interface PregameProps {
     onStart: (artist: Artist, rounds: number) => void;
@@ -63,14 +64,9 @@ export default function Pregame({ onStart }: PregameProps) {
         setSelectedArtist(artist);
     }
 
-    function startGame(formData: FormData) {
-        const rounds = Number(formData.get("rounds"));
+    function startGame(rounds: number) {
         if (!selectedArtist) {
-            setError("Selecciona un artista antes de empezar la partida.");
-            return;
-        }
-        if (!rounds || rounds < 1 || rounds > 5) {
-            setError("Elige un número de rondas entre 1 y 5.");
+            setError("Selecciona un artista antes de empezar.");
             return;
         }
         setError(null);
@@ -115,30 +111,7 @@ export default function Pregame({ onStart }: PregameProps) {
                     {selectedArtist && (
                         <p>Tu artista seleccionado: {selectedArtist.name}</p>
                     )}
-                    {selectedArtist && (
-                        <form
-                            action={startGame}
-                            className="flex items-center gap-4 mt-4"
-                        >
-                            <label htmlFor="rounds" className="font-medium">
-                                Selecciona cuantas rondas:
-                            </label>
-                            <input
-                                type="number"
-                                name="rounds"
-                                min={1}
-                                max={5}
-                                defaultValue={3}
-                                className="border border-gray-300 rounded-lg px-4 py-2 w-20 outline-none focus:border-blue-500"
-                            />
-                            <button
-                                type="submit"
-                                className="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 transition-colors cursor-pointer font-medium"
-                            >
-                                Empezar!
-                            </button>
-                        </form>
-                    )}
+                    {selectedArtist && <RoundSelector onStart={startGame} />}
                 </>
             )}
         </div>
