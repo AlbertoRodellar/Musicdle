@@ -10,7 +10,7 @@ interface PregameProps {
     onStart: (artist: Artist, rounds: number) => void;
 }
 
-const CARDS_PER_PAGE = 4;
+const CARDS_PER_PAGE = 6;
 
 export default function Pregame({ onStart }: PregameProps) {
     const [artists, setArtists] = useState<Artist[]>([]);
@@ -37,7 +37,10 @@ export default function Pregame({ onStart }: PregameProps) {
                 );
             }
             const data = await response.json();
-            setArtists(data.data ?? []);
+            const sortedArtists = data.data.sort(
+                (a: Artist, b: Artist) => b.nb_fan - a.nb_fan,
+            );
+            setArtists(sortedArtists);
             setSelectedArtist(null);
             setPage(0);
             if (!data.data || data.data.length === 0) {
@@ -75,18 +78,18 @@ export default function Pregame({ onStart }: PregameProps) {
     }
 
     return (
-        <div className="min-h-screen p-8">
+        <div>
             <ArtistSearch onArtistSelect={handleArtistSearch} />
             {isLoading ? (
-                <div className="flex flex-wrap gap-4 mt-4">
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4 mt-8">
                     {Array.from({ length: CARDS_PER_PAGE }).map((_, i) => (
                         <div
                             key={i}
-                            className="w-64 h-68 flex flex-col gap-2 p-4 rounded-xl bg-gray-600"
+                            className="h-72 rounded-2xl py-4 px-4 flex flex-col items-center bg-[#1a1f2e]"
                         >
-                            <Skeleton className="w-full h-40 rounded-lg" />
-                            <Skeleton className="h-5 w-3/4 rounded-md mt-2" />
-                            <Skeleton className="h-4 w-1/2 rounded-md" />
+                            <Skeleton className="w-38 h-38 rounded-full mb-4" />
+                            <Skeleton className="h-4 w-3/4 rounded-md pt-6 m-auto" />
+                            <Skeleton className="h-3 w-1/2 rounded-md mt-auto mb-4" />
                         </div>
                     ))}
                 </div>
@@ -108,6 +111,9 @@ export default function Pregame({ onStart }: PregameProps) {
                             onNext={() => setPage((p) => p + 1)}
                             onPrev={() => setPage((p) => p - 1)}
                         />
+                    )}
+                    {selectedArtist && (
+                        <p>Tu artista seleccionado: {selectedArtist.name}</p>
                     )}
                     {selectedArtist && (
                         <form

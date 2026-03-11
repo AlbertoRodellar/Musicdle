@@ -30,7 +30,7 @@ export default function RootLayout({
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
                 <h1 className="text-3xl font-bold mb-6">Adivina la canción</h1>
-                {children}
+                <div className="max-w-7xl mx-auto px-4 md:px-8">{children}</div>
                 <Toaster richColors closeButton />
             </body>
         </html>
