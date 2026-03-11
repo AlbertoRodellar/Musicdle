@@ -145,7 +145,7 @@ export default function PreviewPlayer({
                     onClick={toggle}
                     disabled={!canPlay}
                     size="icon"
-                    className="h-11 w-11 rounded-full bg-white text-black shadow-lg hover:bg-white/90 disabled:opacity-50"
+                    className="h-11 w-11 rounded-full bg-white text-black shadow-lg hover:bg-white/90 disabled:opacity-50 cursor-pointer"
                     aria-label={
                         isPlaying ? "Pausar preview" : "Reproducir preview"
                     }

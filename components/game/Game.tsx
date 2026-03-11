@@ -6,6 +6,7 @@ import LastGuesses from "./LastGuesses";
 import GuessInput from "./GuessInput";
 import Timer from "./Timer";
 import PreviewPlayer from "./PreviewPlayer";
+import { toast } from "sonner";
 
 interface GameProps {
     artist: Artist;
@@ -20,7 +21,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
     const currentSong = selectedSongs[currentRound];
     const [results, setResults] = useState<RoundResult[]>([]);
     const [attempts, setAttempts] = useState(0);
-    const [message, setMessage] = useState("");
+    const [feedback, setFeedback] = useState("");
     const [guesses, setGuesses] = useState<string[]>([]);
     const [startTime, setStartTime] = useState<number>(Date.now());
     const [timerRunning, setTimerRunning] = useState(false);
@@ -66,7 +67,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             setCurrentRound((r) => r + 1);
             setAttempts(0);
             setGuesses([]);
-            setMessage("");
+            setFeedback("");
             setStartTime(Date.now());
         } else {
             // onFinish es la funcion que le pasamos desde page.tsx que basicamente hace un emit de los resultados al padre
@@ -80,7 +81,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
 
         if (guess !== currentSong.title) {
             setAttempts((a) => a + 1);
-            setMessage("❌ Incorrecto.");
+            setFeedback("❌ Incorrecto.");
             return;
         }
 
@@ -94,8 +95,13 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             time: Math.floor((Date.now() - startTime) / 1000), // se calcula en segundos el tiempo que ha tardado en acertar
         };
 
-        setMessage("✅ Acertaste!");
+        setFeedback("✅ Acertaste!");
         setTimerRunning(false);
+
+        toast.success("¡Has acertado!", {
+            position: "top-center",
+            duration: 2000,
+        });
 
         setTimeout(() => {
             setTimerRunning(true);
@@ -114,7 +120,16 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
             skipped: true,
             time: Math.floor((Date.now() - startTime) / 1000),
         };
-        nextRoundOrFinish(newResult, [...results, newResult]);
+
+        toast("Canción saltada", {
+            description: currentSong.title,
+            position: "top-center",
+            duration: 2000,
+        });
+
+        setTimeout(() => {
+            nextRoundOrFinish(newResult, [...results, newResult]);
+        }, 2000);
     }
 
     // Filtra las canciones disponibles para adivinar, quitando las que ya se han adivinado o intentado
@@ -142,7 +157,7 @@ export default function Game({ artist, rounds, onFinish }: GameProps) {
                 onGuess={(guess) => handleGuess(guess)}
                 onSkip={handleSkip}
             />
-            <p className="mt-4">{message}</p>
+            <p className="mt-4">{feedback}</p>
             {guesses.length > 0 && (
                 <>
                     <LastGuesses guesses={guesses} />
