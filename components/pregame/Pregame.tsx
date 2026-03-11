@@ -15,6 +15,8 @@ export default function Pregame({ onStart }: PregameProps) {
     const [artists, setArtists] = useState<Artist[]>([]);
     const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
     const [page, setPage] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const visibleArtists = artists.slice(
         page * CARDS_PER_PAGE,
@@ -22,10 +24,31 @@ export default function Pregame({ onStart }: PregameProps) {
     );
 
     async function handleArtistSearch(artistName: string) {
-        const response = await fetch(`/api/search?q=${artistName}`);
-        const data = await response.json();
-        setArtists(data.data);
-        setPage(0);
+        try {
+            setError(null);
+            setIsLoading(true);
+            const response = await fetch(`/api/search?q=${encodeURIComponent(artistName)}`);
+            if (!response.ok) {
+                throw new Error("No se ha podido buscar el artista. Inténtalo de nuevo.");
+            }
+            const data = await response.json();
+            setArtists(data.data ?? []);
+            setSelectedArtist(null);
+            setPage(0);
+            if (!data.data || data.data.length === 0) {
+                setError("No se han encontrado artistas con ese nombre.");
+            }
+        } catch (e) {
+            setArtists([]);
+            setSelectedArtist(null);
+            setError(
+                e instanceof Error
+                    ? e.message
+                    : "Ha ocurrido un error al buscar el artista.",
+            );
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     function handleArtistSelect(artist: Artist) {
@@ -34,14 +57,31 @@ export default function Pregame({ onStart }: PregameProps) {
 
     function startGame(formData: FormData) {
         const rounds = Number(formData.get("rounds"));
-        if (!rounds || rounds < 1 || rounds > 10) return;
-        if (!selectedArtist) return;
+        if (!selectedArtist) {
+            setError("Selecciona un artista antes de empezar la partida.");
+            return;
+        }
+        if (!rounds || rounds < 1 || rounds > 5) {
+            setError("Elige un número de rondas entre 1 y 5.");
+            return;
+        }
+        setError(null);
         onStart(selectedArtist, rounds);
     }
 
     return (
         <div className="min-h-screen p-8">
             <ArtistSearch onArtistSelect={handleArtistSearch} />
+            {isLoading && (
+                <p className="mt-4 text-gray-400 text-sm">
+                    Buscando artistas...
+                </p>
+            )}
+            {error && (
+                <p className="mt-2 text-red-400 text-sm">
+                    {error}
+                </p>
+            )}
             <ArtistsList
                 artists={visibleArtists}
                 onSelect={handleArtistSelect}
