@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import Link from "next/link";
+import { UserRound } from "lucide-react";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -29,8 +31,27 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-                <h1 className="text-3xl font-bold mb-6">Adivina la canción</h1>
-                <div className="max-w-7xl mx-auto px-4 md:px-8">{children}</div>
+                <header className="border-b border-border">
+                    <div className="max-w-7xl mx-auto px-4 md:px-8 h-14 flex items-center justify-between">
+                        <Link
+                            href="/"
+                            className="text-lg font-bold tracking-tight"
+                        >
+                            🎵 Musicdle
+                        </Link>
+                        <Link
+                            href="/user"
+                            className="p-2 rounded-lg hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                        >
+                            <UserRound size={20} />
+                        </Link>
+                    </div>
+                </header>
+
+                <main className="max-w-7xl mx-auto px-4 md:px-8 py-8">
+                    {children}
+                </main>
+
                 <Toaster richColors closeButton />
             </body>
         </html>
